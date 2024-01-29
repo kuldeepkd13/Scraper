@@ -1,6 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const fs = require('fs')
+const fs = require('fs');
+const zlib = require('zlib');
+
 // Function to fetch HTML content of a webpage
 async function fetchHTML(url) {
     try {
@@ -56,12 +58,11 @@ async function scrapeProductDetails(productURL, deliveryLocation) {
     const mrp = $("#corePriceDisplay_desktop_feature_div > div.a-section.a-spacing-small.aok-align-center > span > span.aok-relative > span > span > span.a-offscreen").text();
     const sellingPrice = $("#corePriceDisplay_desktop_feature_div > div.a-section.a-spacing-none.aok-align-center > span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay > span:nth-child(2) > span.a-price-whole").text();
     const discount = $("#corePriceDisplay_desktop_feature_div > div.a-section.a-spacing-none.aok-align-center > span.a-size-large.a-color-price.savingPriceOverride.aok-align-center.reinventPriceSavingsPercentageMargin.savingsPercentage").text();
-    
     const brandName = $("#productDetails_techSpec_section_1 > tbody > tr:nth-child(1) > td").text().trim()
     const imageUrl = $("#landingImage").attr("src");
-    const  deliveryDate = $("#mir-layout-DELIVERY_BLOCK-slot-PRIMARY_DELIVERY_MESSAGE_LARGE > span > span").text()
+    const deliveryDate = $("#mir-layout-DELIVERY_BLOCK-slot-PRIMARY_DELIVERY_MESSAGE_LARGE > span > span").text()
     const description = $("#feature-bullets > ul > li:nth-child(1) > span").text().trim()
-    // Extract other details...
+
 
     // Map extracted data to schema
     const productData = {
@@ -76,30 +77,43 @@ async function scrapeProductDetails(productURL, deliveryLocation) {
         description
         // Map other fields...
     };
-
-    // Log or process the product data
-    console.log('Product Data:', productData);
-
-    // here i want to create of product.json file and write the product data in json formet
-    
-    const fileName = 'product.json';
-    fs.appendFile(fileName, JSON.stringify(productData, null, 2) + '\n', err => {
-        if (err) {
-            console.error('Error appending to file:', err);
-        } else {
-            console.log(`Product data appended to ${fileName}`);
-        }
-    });
+    console.log(productData);
     return productData;
+}
+
+// Function to write data to a gzip compressed NDJSON file
+function writeDataToFile(products) {
+
+    // Generate a timestamp for unique filename
+    const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/[TZ.]/g, '_');
+
+    // Create a unique filename with timestamp
+    const filename = `products_${timestamp}.gz`;
+    // Convert products to NDJSON format
+    const ndjsonData = products.map(product => JSON.stringify(product)).join('\n');
+
+    // Compress NDJSON data using gzip
+    const compressedData = zlib.gzipSync(ndjsonData);
+
+    // Write compressed data to a file
+    fs.writeFileSync(filename, compressedData);
 }
 
 // Main function to scrape laptop data
 async function scrapeLaptops(deliveryLocation) {
     const productURLs = await scrapeProductURLs();
+    const products = [];
 
     for (const productURL of productURLs) {
-        await scrapeProductDetails(productURL, deliveryLocation);
+        const productData = await scrapeProductDetails(productURL, deliveryLocation);
+        if (productData) {
+            products.push(productData);
+        }
     }
+
+    // Write scraped data to a gzip compressed NDJSON file
+    writeDataToFile(products)
+
 }
 
 // Call the main scraping function with the delivery location parameter

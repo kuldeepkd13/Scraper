@@ -10,13 +10,15 @@ The project consists of a single JavaScript file named `index.js`, which contain
 - axios: For making HTTP requests.
 - cheerio: For parsing HTML.
 - fs: For file system operations.
+- zlib: For gzip compression.
 
 
 ## 4. How to Run:
 To run the scraper, execute the following command in the terminal: `node index.js`.
 
 ## 5. Functionality:
-The scraper first fetches the search results page of Amazon-IN for laptops and extracts the URLs of individual product pages. It then visits each product page to extract details such as SKU ID, product name, price, brand, delivery information, etc. The extracted data is written to a json file named `product.json`.
+The scraper first fetches the search results page of Amazon-IN for laptops and extracts the URLs of individual product pages. It then visits each product page to extract details such as SKU ID, product name, price, brand, delivery information, etc. The extracted data is written to a gzip compressed NDJSON file named `products.gz`.
+
 
 ## 6. Error Handling:
 The scraper handles errors gracefully by logging error messages to the console and skipping over any failed operations. For example, if fetching HTML for a product page fails, the scraper logs an error message and continues to the next product.
