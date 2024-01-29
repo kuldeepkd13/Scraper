@@ -17,7 +17,7 @@ The project consists of a single JavaScript file named `index.js`, which contain
 To run the scraper, execute the following command in the terminal: `node index.js`.
 
 ## 5. Functionality:
-The scraper first fetches the search results page of Amazon-IN for laptops and extracts the URLs of individual product pages. It then visits each product page to extract details such as SKU ID, product name, price, brand, delivery information, etc. The extracted data is written to a gzip compressed NDJSON file named `products.gz`.
+The scraper first fetches the search results page of Amazon-IN for laptops and extracts the URLs of individual product pages. It then visits each product page to extract details such as SKU ID, product name, price, brand, delivery information, etc. The extracted data is then organized and written to a gzip compressed NDJSON file. Each file is uniquely named with a timestamp in the format `products_<timestamp>.gz`, where `<timestamp>` represents the current date and time in UTC format. This ensures that each run of the scraper generates a new and unique file containing structured data in NDJSON format, making it easy to parse and analyze the scraped information programmatically.
 
 
 ## 6. Error Handling:
